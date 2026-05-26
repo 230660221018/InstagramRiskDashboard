@@ -21,37 +21,37 @@ st.markdown("""
 <style>
 
 .main{
-background:#f8fafc;
+    background:#f8fafc;
 }
 
 .block-container{
-padding-top:1rem;
-padding-left:2rem;
-padding-right:2rem;
+    padding-top:1rem;
+    padding-left:2rem;
+    padding-right:2rem;
 }
 
 .metric-card{
-background:white;
-padding:20px;
-border-radius:20px;
-box-shadow:0px 6px 18px rgba(0,0,0,0.08);
-border-left:8px solid #2563eb;
+    background:white;
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0px 4px 12px rgba(0,0,0,0.08);
+    border-left:6px solid #2563eb;
 }
 
 .metric-title{
-font-size:14px;
-color:#6b7280;
+    font-size:14px;
+    color:#64748b;
 }
 
 .metric-value{
-font-size:32px;
-font-weight:700;
-color:#111827;
+    font-size:30px;
+    font-weight:700;
+    color:#0f172a;
 }
 
 .small-text{
-font-size:13px;
-color:#64748b;
+    font-size:12px;
+    color:#64748b;
 }
 
 </style>
@@ -144,7 +144,7 @@ missing_cols = [
 if missing_cols:
 
     st.error(
-        f"Kolom berikut tidak ditemukan pada dataset: {missing_cols}"
+        f"Kolom berikut tidak ditemukan: {missing_cols}"
     )
 
     st.stop()
@@ -187,9 +187,13 @@ st.sidebar.title(
 )
 
 st.sidebar.markdown("""
-Dashboard analitik penelitian:
+Analisis hubungan:
 
-**Pengaruh Algoritma Rekomendasi Konten dan Echo Chamber terhadap Risiko Adiksi Digital Instagram**
+• Algoritma Rekomendasi Konten
+
+• Echo Chamber
+
+• Risiko Adiksi Digital Instagram
 """)
 
 st.sidebar.markdown("---")
@@ -255,6 +259,17 @@ df = df[
 ]
 
 # ======================================================
+# SIDEBAR SUMMARY
+# ======================================================
+
+st.sidebar.markdown("---")
+
+st.sidebar.metric(
+    "Responden Aktif",
+    len(df)
+)
+
+# ======================================================
 # HEADER
 # ======================================================
 
@@ -263,7 +278,7 @@ st.title(
 )
 
 st.markdown("""
-Visualisasi analitik hasil penelitian berbasis data responden Instagram di Kabupaten Sumedang menggunakan pendekatan **SmartPLS**.
+Analisis hubungan **Algoritma Rekomendasi Konten**, **Echo Chamber**, dan **Risiko Adiksi Digital Instagram** berdasarkan data responden Kabupaten Sumedang.
 """)
 
 # ======================================================
@@ -286,7 +301,7 @@ with c1:
     </div>
 
     <div class="small-text">
-    Data aktif setelah filtering
+    Data setelah filtering
     </div>
 
     </div>
@@ -298,15 +313,15 @@ with c2:
     <div class="metric-card">
 
     <div class="metric-title">
-    Pengaruh Algoritma
+    Skor Algoritma
     </div>
 
     <div class="metric-value">
-    {round(df['Skor Algoritma'].mean(),2)}/5
+    {df['Skor Algoritma'].mean():.2f}/5
     </div>
 
     <div class="small-text">
-    Rata-rata persepsi responden
+    Persepsi responden
     </div>
 
     </div>
@@ -318,15 +333,15 @@ with c3:
     <div class="metric-card">
 
     <div class="metric-title">
-    Tingkat Echo Chamber
+    Skor Echo Chamber
     </div>
 
     <div class="metric-value">
-    {round(df['Skor Echo Chamber'].mean(),2)}/5
+    {df['Skor Echo Chamber'].mean():.2f}/5
     </div>
 
     <div class="small-text">
-    Intensitas homogenitas informasi
+    Homogenitas informasi
     </div>
 
     </div>
@@ -338,37 +353,84 @@ with c4:
     <div class="metric-card">
 
     <div class="metric-title">
-    Risiko Adiksi Digital
+    Skor Risiko
     </div>
 
     <div class="metric-value">
-    {round(df['Skor Risiko'].mean(),2)}/5
+    {df['Skor Risiko'].mean():.2f}/5
     </div>
 
     <div class="small-text">
-    Tingkat kecenderungan adiksi
+    Risiko adiksi digital
     </div>
 
     </div>
     """, unsafe_allow_html=True)
 
 # ======================================================
+# STATUS RISIKO
+# ======================================================
+
+mean_risk = df["Skor Risiko"].mean()
+
+if mean_risk >= 3.41:
+
+    st.error(
+        f"Status Risiko Saat Ini: TINGGI ({mean_risk:.2f}/5)"
+    )
+
+elif mean_risk >= 2.61:
+
+    st.warning(
+        f"Status Risiko Saat Ini: SEDANG ({mean_risk:.2f}/5)"
+    )
+
+else:
+
+    st.success(
+        f"Status Risiko Saat Ini: RENDAH ({mean_risk:.2f}/5)"
+    )
+
+# ======================================================
+# RINGKASAN TEMUAN
+# ======================================================
+
+st.markdown("### Ringkasan Temuan")
+
+colA, colB, colC = st.columns(3)
+
+with colA:
+
+    st.success(
+        "Echo Chamber menunjukkan hubungan yang lebih kuat terhadap Risiko Adiksi Digital."
+    )
+
+with colB:
+
+    st.info(
+        "Algoritma Rekomendasi Konten berperan sebagai mekanisme personalisasi informasi."
+    )
+
+with colC:
+
+    st.warning(
+        "Sebagian besar responden berada pada kategori risiko sedang hingga tinggi."
+    )
+
+# ======================================================
 # INTERPRETASI SKOR
 # ======================================================
 
-st.info("""
-Interpretasi skor Likert:
-
-• 1.00 – 1.80 = Sangat Rendah
-
-• 1.81 – 2.60 = Rendah
-
-• 2.61 – 3.40 = Sedang
-
-• 3.41 – 4.20 = Tinggi
-
-• 4.21 – 5.00 = Sangat Tinggi
-""")
+st.caption(
+"""
+Interpretasi Skor:
+1.00–1.80 (Sangat Rendah) |
+1.81–2.60 (Rendah) |
+2.61–3.40 (Sedang) |
+3.41–4.20 (Tinggi) |
+4.21–5.00 (Sangat Tinggi)
+"""
+)
 
 # ======================================================
 # TABS
@@ -395,7 +457,7 @@ tabs = st.tabs([
 with tabs[0]:
 
     st.subheader(
-        "Ringkasan Risiko Digital Instagram"
+        "Ringkasan Hasil Analisis"
     )
 
     col1, col2 = st.columns(2)
@@ -410,13 +472,16 @@ with tabs[0]:
 
             nbins=10,
 
-            color_discrete_sequence=["#ef4444"]
+            color="Kategori Risiko",
+
+            title="Distribusi Risiko Adiksi Digital"
 
         )
 
         fig1.update_layout(
             height=420,
-            title="Distribusi Skor Risiko Adiksi Digital"
+            xaxis_title="Skor Risiko",
+            yaxis_title="Jumlah Responden"
         )
 
         st.plotly_chart(
@@ -426,19 +491,40 @@ with tabs[0]:
 
     with col2:
 
+        kategori_df = (
+
+            df["Kategori Risiko"]
+
+            .value_counts()
+
+            .reset_index()
+
+        )
+
+        kategori_df.columns = [
+
+            "Kategori Risiko",
+
+            "Jumlah"
+
+        ]
+
         fig2 = px.pie(
 
-            df,
+            kategori_df,
 
-            names="Jenis Kelamin",
+            names="Kategori Risiko",
 
-            hole=0.5
+            values="Jumlah",
+
+            hole=0.55,
+
+            title="Komposisi Tingkat Risiko"
 
         )
 
         fig2.update_layout(
-            height=420,
-            title="Komposisi Jenis Kelamin Responden"
+            height=420
         )
 
         st.plotly_chart(
@@ -449,60 +535,60 @@ with tabs[0]:
     st.markdown("---")
 
     st.markdown(
-        "### Distribusi Kategori Risiko"
+        "### Rata-rata Skor Variabel Penelitian"
     )
 
-    risk_dist = (
+    mean_df = pd.DataFrame({
 
-        df["Kategori Risiko"]
+        "Variabel":[
 
-        .value_counts()
+            "Algoritma Rekomendasi",
 
-        .reset_index()
+            "Echo Chamber",
+
+            "Risiko Adiksi Digital"
+
+        ],
+
+        "Skor":[
+
+            df["Skor Algoritma"].mean(),
+
+            df["Skor Echo Chamber"].mean(),
+
+            df["Skor Risiko"].mean()
+
+        ]
+
+    })
+
+    mean_chart = px.bar(
+
+        mean_df,
+
+        x="Variabel",
+
+        y="Skor",
+
+        color="Skor",
+
+        text_auto=".2f"
 
     )
 
-    risk_dist.columns = [
-        "Kategori Risiko",
-        "Jumlah"
-    ]
-
-    risk_chart = px.bar(
-
-        risk_dist,
-
-        x="Kategori Risiko",
-
-        y="Jumlah",
-
-        color="Kategori Risiko",
-
-        text_auto=True
-
-    )
-
-    risk_chart.update_layout(
-        height=420
+    mean_chart.update_layout(
+        height=450,
+        xaxis_title="",
+        yaxis_title="Rata-rata Skor"
     )
 
     st.plotly_chart(
-        risk_chart,
+        mean_chart,
         use_container_width=True
     )
 
-    total_high = len(
-        df[
-            df["Kategori Risiko"] == "Tinggi"
-        ]
-    )
-
-    persentase_high = round(
-        (total_high / len(df)) * 100,
-        1
-    )
-
-    st.success(
-        f"{persentase_high}% responden berada pada kategori Risiko Tinggi."
+    st.caption(
+        "Grafik menunjukkan rata-rata skor dari setiap variabel yang digunakan dalam penelitian."
     )
 
 # ======================================================
@@ -512,7 +598,7 @@ with tabs[0]:
 with tabs[1]:
 
     st.subheader(
-        "Profil Responden Penelitian"
+        "Profil Responden"
     )
 
     kiri, kanan = st.columns(2)
@@ -530,8 +616,11 @@ with tabs[1]:
         )
 
         usia_df.columns = [
+
             "Usia",
+
             "Jumlah"
+
         ]
 
         usia_chart = px.bar(
@@ -542,7 +631,11 @@ with tabs[1]:
 
             y="Jumlah",
 
-            color="Jumlah"
+            color="Jumlah",
+
+            text_auto=True,
+
+            title="Distribusi Usia Responden"
 
         )
 
@@ -557,11 +650,9 @@ with tabs[1]:
 
     with kanan:
 
-        durasi_df = (
+        gender_df = (
 
-            df[
-                "Rata-rata Durasi Penggunaan Instagram per Hari"
-            ]
+            df["Jenis Kelamin"]
 
             .value_counts()
 
@@ -569,31 +660,83 @@ with tabs[1]:
 
         )
 
-        durasi_df.columns = [
-            "Durasi",
+        gender_df.columns = [
+
+            "Jenis Kelamin",
+
             "Jumlah"
+
         ]
 
-        durasi_chart = px.bar(
+        gender_chart = px.pie(
 
-            durasi_df,
+            gender_df,
 
-            x="Durasi",
+            names="Jenis Kelamin",
 
-            y="Jumlah",
+            values="Jumlah",
 
-            color="Jumlah"
+            hole=0.55,
+
+            title="Komposisi Jenis Kelamin"
 
         )
 
-        durasi_chart.update_layout(
+        gender_chart.update_layout(
             height=420
         )
 
         st.plotly_chart(
-            durasi_chart,
+            gender_chart,
             use_container_width=True
         )
+
+    st.markdown("---")
+
+    durasi_df = (
+
+        df[
+            "Rata-rata Durasi Penggunaan Instagram per Hari"
+        ]
+
+        .value_counts()
+
+        .reset_index()
+
+    )
+
+    durasi_df.columns = [
+
+        "Durasi",
+
+        "Jumlah"
+
+    ]
+
+    durasi_chart = px.bar(
+
+        durasi_df,
+
+        x="Durasi",
+
+        y="Jumlah",
+
+        color="Jumlah",
+
+        text_auto=True,
+
+        title="Durasi Penggunaan Instagram per Hari"
+
+    )
+
+    durasi_chart.update_layout(
+        height=450
+    )
+
+    st.plotly_chart(
+        durasi_chart,
+        use_container_width=True
+    )
 
 # ======================================================
 # ANALISIS RISIKO
@@ -602,17 +745,16 @@ with tabs[1]:
 with tabs[2]:
 
     st.subheader(
-        "Analisis Risiko Adiksi Digital"
+        "Analisis Hubungan Variabel"
     )
 
-    st.info("""
-Bagian ini menampilkan pola hubungan antar variabel penelitian.
-Visualisasi digunakan untuk membantu interpretasi hubungan Algoritma Rekomendasi Konten, Echo Chamber, dan Risiko Adiksi Digital sebelum dikonfirmasi melalui pengujian SmartPLS.
-""")
+    st.caption(
+        "Visualisasi berikut membantu melihat hubungan antara Algoritma Rekomendasi, Echo Chamber, dan Risiko Adiksi Digital."
+    )
 
-    left, right = st.columns(2)
+    col1, col2 = st.columns(2)
 
-    with left:
+    with col1:
 
         corr = df[
 
@@ -632,16 +774,16 @@ Visualisasi digunakan untuk membantu interpretasi hubungan Algoritma Rekomendasi
 
             corr,
 
-            text_auto=True,
+            text_auto=".2f",
 
             color_continuous_scale="RdBu",
 
-            title="Matriks Korelasi Antar Variabel"
+            title="Korelasi Antar Variabel"
 
         )
 
         heat.update_layout(
-            height=420
+            height=450
         )
 
         st.plotly_chart(
@@ -649,7 +791,7 @@ Visualisasi digunakan untuk membantu interpretasi hubungan Algoritma Rekomendasi
             use_container_width=True
         )
 
-    with right:
+    with col2:
 
         scatter = px.scatter(
 
@@ -659,18 +801,16 @@ Visualisasi digunakan untuk membantu interpretasi hubungan Algoritma Rekomendasi
 
             y="Skor Risiko",
 
-            color="Usia",
+            color="Kategori Risiko",
 
             size="Skor Algoritma",
-
-            trendline="ols",
 
             title="Hubungan Echo Chamber dan Risiko Adiksi Digital"
 
         )
 
         scatter.update_layout(
-            height=420
+            height=450
         )
 
         st.plotly_chart(
@@ -681,14 +821,14 @@ Visualisasi digunakan untuk membantu interpretasi hubungan Algoritma Rekomendasi
     st.markdown("---")
 
     st.markdown(
-        "### Perbandingan Pengaruh Variabel terhadap Risiko Adiksi Digital"
+        "### Perbandingan Hubungan Variabel"
     )
 
-    compare_col1, compare_col2 = st.columns(2)
+    kiri, kanan = st.columns(2)
 
-    with compare_col1:
+    with kiri:
 
-        alg_chart = px.scatter(
+        fig_algoritma = px.scatter(
 
             df,
 
@@ -696,24 +836,24 @@ Visualisasi digunakan untuk membantu interpretasi hubungan Algoritma Rekomendasi
 
             y="Skor Risiko",
 
-            trendline="ols",
+            color="Kategori Risiko",
 
-            title="Algoritma Rekomendasi → Risiko Adiksi Digital"
+            title="Algoritma Rekomendasi dan Risiko Adiksi Digital"
 
         )
 
-        alg_chart.update_layout(
+        fig_algoritma.update_layout(
             height=420
         )
 
         st.plotly_chart(
-            alg_chart,
+            fig_algoritma,
             use_container_width=True
         )
 
-    with compare_col2:
+    with kanan:
 
-        echo_chart = px.scatter(
+        fig_echo = px.scatter(
 
             df,
 
@@ -721,28 +861,32 @@ Visualisasi digunakan untuk membantu interpretasi hubungan Algoritma Rekomendasi
 
             y="Skor Risiko",
 
-            trendline="ols",
+            color="Kategori Risiko",
 
-            title="Echo Chamber → Risiko Adiksi Digital"
+            title="Echo Chamber dan Risiko Adiksi Digital"
 
         )
 
-        echo_chart.update_layout(
+        fig_echo.update_layout(
             height=420
         )
 
         st.plotly_chart(
-            echo_chart,
+            fig_echo,
             use_container_width=True
         )
 
-    st.warning("""
-Visualisasi menunjukkan bahwa hubungan antara Echo Chamber dan Risiko Adiksi Digital cenderung lebih kuat dibandingkan hubungan antara Algoritma Rekomendasi Konten dan Risiko Adiksi Digital.
-
-Namun demikian, kesimpulan akhir mengenai signifikansi pengaruh ditentukan berdasarkan hasil pengujian SmartPLS pada tab berikutnya.
-""")
-
     st.markdown("---")
+
+    st.success("""
+Temuan Utama:
+
+• Responden dengan skor Echo Chamber yang lebih tinggi cenderung memiliki skor Risiko Adiksi Digital yang lebih tinggi.
+
+• Hubungan Echo Chamber dengan Risiko Adiksi Digital terlihat lebih kuat dibandingkan hubungan Algoritma Rekomendasi.
+
+• Hasil pengujian statistik lengkap dapat dilihat pada tab SmartPLS.
+""")
 
     aktivitas_col = None
 
@@ -756,8 +900,10 @@ Namun demikian, kesimpulan akhir mengenai signifikansi pengaruh ditentukan berda
 
     if aktivitas_col:
 
+        st.markdown("---")
+
         st.markdown(
-            "### Risiko Adiksi Berdasarkan Aktivitas Instagram Dominan"
+            "### Risiko Berdasarkan Aktivitas Instagram"
         )
 
         aktivitas = (
@@ -782,17 +928,23 @@ Namun demikian, kesimpulan akhir mengenai signifikansi pengaruh ditentukan berda
 
             color="Skor Risiko",
 
-            text_auto=True
+            text_auto=".2f"
 
         )
 
         aktivitas_chart.update_layout(
-            height=500
+            height=500,
+            xaxis_title="Aktivitas",
+            yaxis_title="Rata-rata Skor Risiko"
         )
 
         st.plotly_chart(
             aktivitas_chart,
             use_container_width=True
+        )
+
+        st.caption(
+            "Grafik menunjukkan aktivitas Instagram yang memiliki rata-rata skor risiko lebih tinggi dibanding aktivitas lainnya."
         )
 
 # ======================================================
@@ -802,23 +954,27 @@ Namun demikian, kesimpulan akhir mengenai signifikansi pengaruh ditentukan berda
 with tabs[3]:
 
     st.subheader(
-        "Hasil Pengujian SmartPLS"
+        "Hasil Pengujian Model Penelitian"
     )
 
-    st.info("""
-Temuan utama penelitian:
+    st.markdown("""
+Dashboard ini menggunakan hasil pengujian SmartPLS untuk mengevaluasi hubungan antara:
 
-• Algoritma Rekomendasi Konten tidak berpengaruh signifikan terhadap Risiko Adiksi Digital (p > 0.05).
+• Algoritma Rekomendasi Konten
 
-• Echo Chamber berpengaruh signifikan terhadap Risiko Adiksi Digital (p < 0.05).
+• Echo Chamber
 
-• Echo Chamber merupakan faktor dominan yang memengaruhi Risiko Adiksi Digital pada responden.
+• Risiko Adiksi Digital Instagram
 """)
 
     st.markdown("---")
 
+# ======================================================
+# OUTER LOADING
+# ======================================================
+
     st.markdown(
-        "### Outer Loading"
+        "### Validitas Indikator (Outer Loading)"
     )
 
     outer_loading = pd.DataFrame({
@@ -867,19 +1023,43 @@ Temuan utama penelitian:
 
     })
 
-    st.dataframe(
+    fig_outer = px.bar(
+
         outer_loading,
+
+        x="Indikator",
+
+        y="Loading",
+
+        color="Loading",
+
+        text_auto=".3f",
+
+        title="Nilai Outer Loading"
+
+    )
+
+    fig_outer.update_layout(
+        height=500
+    )
+
+    st.plotly_chart(
+        fig_outer,
         use_container_width=True
     )
 
     st.success(
-        "Seluruh indikator memenuhi syarat validitas konvergen (loading > 0.70)."
+        "Seluruh indikator memenuhi kriteria validitas konvergen (Outer Loading > 0.70)."
     )
+
+# ======================================================
+# RELIABILITY
+# ======================================================
 
     st.markdown("---")
 
     st.markdown(
-        "### Construct Reliability & Validity"
+        "### Reliability dan Validity"
     )
 
     construct = pd.DataFrame({
@@ -897,9 +1077,7 @@ Temuan utama penelitian:
         "Cronbach Alpha":[
 
             0.877,
-
             0.777,
-
             0.879
 
         ],
@@ -907,9 +1085,7 @@ Temuan utama penelitian:
         "Composite Reliability":[
 
             0.904,
-
             0.855,
-
             0.911
 
         ],
@@ -917,9 +1093,7 @@ Temuan utama penelitian:
         "AVE":[
 
             0.653,
-
             0.597,
-
             0.672
 
         ]
@@ -931,30 +1105,41 @@ Temuan utama penelitian:
         use_container_width=True
     )
 
-    st.success(
-        "Model memenuhi validitas konvergen, reliabilitas konstruk, dan nilai AVE yang baik."
-    )
+    st.info("""
+Interpretasi:
+
+• Seluruh konstruk reliabel.
+
+• Composite Reliability > 0.70.
+
+• AVE > 0.50.
+
+• Model layak digunakan untuk pengujian hipotesis.
+""")
+
+# ======================================================
+# HYPOTHESIS
+# ======================================================
 
     st.markdown("---")
 
     st.markdown(
-        "### Uji Hipotesis"
+        "### Hasil Pengujian Hipotesis"
     )
 
     hypothesis = pd.DataFrame({
 
         "Hubungan":[
 
-            "Algoritma Rekomendasi Konten → Risiko Adiksi Digital",
+            "Algoritma Rekomendasi → Risiko Adiksi",
 
-            "Echo Chamber → Risiko Adiksi Digital"
+            "Echo Chamber → Risiko Adiksi"
 
         ],
 
         "T Statistics":[
 
             0.524,
-
             4.114
 
         ],
@@ -962,7 +1147,6 @@ Temuan utama penelitian:
         "P Value":[
 
             0.600,
-
             0.000
 
         ],
@@ -984,235 +1168,42 @@ Temuan utama penelitian:
 
     st.markdown("---")
 
-    st.markdown(
-        "### Visualisasi Besaran Pengaruh Antar Variabel"
-    )
+    col1,col2=st.columns(2)
 
-    path_df = pd.DataFrame({
-
-        "Variabel":[
-
-            "Algoritma Rekomendasi",
-
-            "Echo Chamber"
-
-        ],
-
-        "Koefisien Jalur":[
-
-            0.052,
-
-            0.491
-
-        ]
-
-    })
-
-    path_chart = px.bar(
-
-        path_df,
-
-        x="Variabel",
-
-        y="Koefisien Jalur",
-
-        color="Koefisien Jalur",
-
-        text_auto=True
-
-    )
-
-    path_chart.update_layout(
-        height=450
-    )
-
-    st.plotly_chart(
-        path_chart,
-        use_container_width=True
-    )
-
-    st.info("""
-Interpretasi:
-
-Koefisien jalur menunjukkan bahwa Echo Chamber memiliki pengaruh yang jauh lebih besar terhadap Risiko Adiksi Digital dibandingkan Algoritma Rekomendasi Konten.
-
-Temuan ini menunjukkan bahwa homogenitas informasi yang diterima pengguna menjadi faktor yang lebih dominan dibandingkan mekanisme rekomendasi konten itu sendiri.
-""")
-
-    st.markdown("---")
-
-    st.markdown(
-        "### Analisis Sosioteknis (Lensa Teori Kritis)"
-    )
-
-    st.warning("""
-Dari perspektif Teori Kritis, teknologi tidak dipandang sebagai alat yang netral.
-
-Hasil penelitian menunjukkan bahwa paparan Echo Chamber dapat memperkuat keterikatan pengguna terhadap lingkungan informasi yang homogen.
-
-Kondisi ini berpotensi:
-
-• Mengurangi keberagaman perspektif informasi.
-
-• Memperkuat bias konfirmasi pengguna.
-
-• Meningkatkan ketergantungan terhadap platform digital.
-
-• Mendorong perilaku penggunaan berulang secara tidak sadar.
-
-Oleh karena itu, mitigasi tidak hanya perlu dilakukan pada aspek teknis, tetapi juga pada aspek sosial dan literasi digital pengguna.
-""")
-
-# ======================================================
-# MITIGASI TAB
-# ======================================================
-
-with tabs[4]:
-
-    st.subheader(
-        "Rekomendasi Mitigasi Risiko"
-    )
-
-    st.info("""
-Strategi mitigasi dirumuskan berdasarkan hasil pengujian SmartPLS yang menunjukkan bahwa Echo Chamber merupakan faktor dominan yang memengaruhi Risiko Adiksi Digital.
-""")
-
-    mitigation_df = pd.DataFrame({
-
-        "Area Risiko":[
-
-            "Echo Chamber",
-
-            "Adiksi Digital",
-
-            "Bias Informasi",
-
-            "Ketergantungan Platform"
-
-        ],
-
-        "Strategi Teknis":[
-
-            "Diversifikasi rekomendasi konten",
-
-            "Screen time reminder",
-
-            "Penyajian sumber informasi alternatif",
-
-            "Monitoring aktivitas digital"
-
-        ],
-
-        "Strategi Manajerial":[
-
-            "Literasi digital",
-
-            "Edukasi penggunaan sehat",
-
-            "Peningkatan kesadaran kritis",
-
-            "Kebijakan penggunaan media sosial"
-
-        ]
-
-    })
-
-    st.dataframe(
-        mitigation_df,
-        use_container_width=True
-    )
-
-    st.markdown("---")
-
-    risk = df["Skor Risiko"].mean()
-
-    if risk >= 4:
+    with col1:
 
         st.error("""
+Hubungan Tidak Signifikan
 
-### RISIKO TINGGI
+Algoritma Rekomendasi Konten → Risiko Adiksi Digital
 
-• Batasi screen time Instagram.
-
-• Aktifkan pengingat waktu penggunaan aplikasi.
-
-• Diversifikasi sumber informasi.
-
-• Kurangi paparan konten homogen.
-
-• Tingkatkan literasi digital.
-
-• Evaluasi pola penggunaan media sosial secara berkala.
-
+P Value = 0.600
 """)
 
-    elif risk >= 3:
-
-        st.warning("""
-
-### RISIKO SEDANG
-
-• Monitoring durasi penggunaan Instagram.
-
-• Kurangi konsumsi konten repetitif.
-
-• Tingkatkan kesadaran penggunaan digital.
-
-• Diversifikasi akun dan sumber informasi.
-
-• Batasi aktivitas scrolling tanpa tujuan.
-
-""")
-
-    else:
+    with col2:
 
         st.success("""
+Hubungan Signifikan
 
-### RISIKO RENDAH
+Echo Chamber → Risiko Adiksi Digital
 
-Penggunaan Instagram relatif terkendali.
-
-Tetap pertahankan pola penggunaan yang sehat dan seimbang.
-
+P Value = 0.000
 """)
+
+# ======================================================
+# KEY INSIGHT
+# ======================================================
 
     st.markdown("---")
 
     st.markdown(
-        "### Refleksi Keberlanjutan dan Evolusi AI"
+        "### Insight Penelitian"
     )
 
-    st.info("""
-Dashboard dirancang sebagai artefak Digital Risk Analytics yang dapat dikembangkan lebih lanjut dengan teknologi Artificial Intelligence dan Machine Learning.
+    st.success("""
+Temuan utama penelitian menunjukkan bahwa Echo Chamber memiliki pengaruh signifikan terhadap Risiko Adiksi Digital Instagram.
 
-Ke depan, sistem dapat digunakan untuk:
+Sebaliknya, Algoritma Rekomendasi Konten tidak menunjukkan pengaruh langsung yang signifikan.
 
-• Prediksi risiko adiksi digital secara otomatis.
-
-• Deteksi pola Echo Chamber berbasis AI.
-
-• Personalisasi rekomendasi mitigasi.
-
-• Monitoring perilaku digital secara berkelanjutan.
-
-Dengan pendekatan Responsible Innovation, pengembangan sistem harus tetap memperhatikan aspek privasi, transparansi, dan dampak sosial teknologi.
+Hasil ini mengindikasikan bahwa risiko adiksi lebih dipengaruhi oleh homogenitas informasi dan keterpaparan pada sudut pandang yang berulang dibandingkan mekanisme rekomendasi konten itu sendiri.
 """)
-
-# ======================================================
-# DATASET VIEW
-# ======================================================
-
-st.markdown("---")
-
-with st.expander(
-    "📄 Lihat Dataset Penelitian"
-):
-
-    st.dataframe(
-        df,
-        use_container_width=True
-    )
-
-st.caption(
-    "Instagram Digital Addiction Risk Analytics Dashboard | Design Science Research (DSR)"
-)
