@@ -218,7 +218,7 @@ st.title(
 )
 
 st.markdown("""
-Visualisasi analitik hasil penelitian berbasis data responden Instagram menggunakan pendekatan **SmartPLS**.
+Visualisasi analitik hasil penelitian berbasis data responden Instagram di Kabupaten Sumedang menggunakan pendekatan **SmartPLS**.
 """)
 
 # ======================================================
