@@ -58,18 +58,66 @@ type=["csv","xlsx"]
 
 if uploaded_file:
 
-    st.sidebar.success("Mode Preview Dataset Aktif")
+    try:
 
-    if uploaded_file.name.endswith(".csv"):
-        df = pd.read_csv(uploaded_file)
+        if uploaded_file.name.endswith(".csv"):
 
-    else:
-        df = pd.read_excel(uploaded_file)
+            try:
+                df = pd.read_csv(
+                    uploaded_file,
+                    encoding='utf-8'
+                )
+
+            except:
+
+                uploaded_file.seek(0)
+
+                try:
+                    df = pd.read_csv(
+                        uploaded_file,
+                        encoding='latin1'
+                    )
+
+                except:
+
+                    uploaded_file.seek(0)
+
+                    df = pd.read_csv(
+                        uploaded_file,
+                        encoding='cp1252'
+                    )
+
+        else:
+
+            df = pd.read_excel(uploaded_file)
+
+        st.sidebar.success(
+            "Dataset berhasil dimuat."
+        )
+
+    except Exception as e:
+
+        st.error(
+            f"Gagal membaca file: {e}"
+        )
+
+        st.stop()
 
 else:
-    df = pd.read_csv("dataset.csv")
 
-df.columns=df.columns.str.strip()
+    try:
+
+        df = pd.read_csv(
+            "dataset.csv",
+            encoding='utf-8'
+        )
+
+    except:
+
+        df = pd.read_csv(
+            "dataset.csv",
+            encoding='latin1'
+        )
 
 # =======================
 # TEMPLATE
