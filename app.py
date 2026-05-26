@@ -1,148 +1,125 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-# =====================================================
-# CONFIG
-# =====================================================
-
 st.set_page_config(
     page_title="Instagram Digital Addiction Risk Analytics Dashboard",
-    layout="wide",
-    page_icon="📈"
+    page_icon="📊",
+    layout="wide"
 )
 
-# =====================================================
-# CSS MODERN PROFESSIONAL UI
-# =====================================================
+# =======================
+# CSS
+# =======================
 
 st.markdown("""
 <style>
 
-.main{
-background-color:#0F172A;
-color:white;
-}
-
-h1,h2,h3{
-color:white;
-}
-
-.block-container{
+.main .block-container{
 padding-top:1rem;
+padding-left:2rem;
+padding-right:2rem;
+max-width:100%;
 }
 
 .metric-card{
-background:linear-gradient(135deg,#1E293B,#0F172A);
-padding:20px;
-border-radius:20px;
-box-shadow:0px 4px 20px rgba(0,0,0,.3);
-}
-
-[data-testid="metric-container"]{
-background:linear-gradient(135deg,#1E293B,#111827);
+background:#111827;
 padding:18px;
-border-radius:16px;
-border:1px solid #334155;
+border-radius:18px;
+color:white;
+box-shadow:0 4px 20px rgba(0,0,0,0.12);
+text-align:center;
 }
 
-.stTabs [data-baseweb="tab-list"]{
-gap:10px;
+.metric-title{
+font-size:15px;
+color:#cbd5e1;
 }
 
-.stTabs [data-baseweb="tab"]{
-background:#1E293B;
-border-radius:12px;
-padding:10px 18px;
+.metric-value{
+font-size:34px;
+font-weight:bold;
 }
 
 </style>
 """,unsafe_allow_html=True)
 
-# =====================================================
+# =======================
 # SIDEBAR
-# =====================================================
+# =======================
 
-st.sidebar.title("⚙️ Pengaturan Dashboard")
+st.sidebar.title("📂 Dataset")
 
-uploaded=st.sidebar.file_uploader(
-"Upload Dataset CSV / Excel",
+uploaded_file = st.sidebar.file_uploader(
+"Upload CSV / Excel",
 type=["csv","xlsx"]
 )
 
-# =====================================================
-# LOAD DATA
-# =====================================================
+if uploaded_file:
 
-if uploaded:
+    st.sidebar.success("Mode Preview Dataset Aktif")
 
-    if uploaded.name.endswith(".csv"):
-
-        df=pd.read_csv(uploaded)
+    if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file)
 
     else:
-
-        df=pd.read_excel(uploaded)
+        df = pd.read_excel(uploaded_file)
 
 else:
-
-    try:
-        df=pd.read_csv("dataset.csv")
-
-    except:
-
-        st.warning("Upload dataset terlebih dahulu.")
-        st.stop()
+    df = pd.read_csv("dataset.csv")
 
 df.columns=df.columns.str.strip()
 
-# =====================================================
-# VALIDASI
-# =====================================================
+# =======================
+# TEMPLATE
+# =======================
 
-required_cols=[
+st.sidebar.markdown("---")
 
-'Jenis Kelamin',
-'Usia',
-'Rata-rata Durasi Penggunaan Instagram per Hari',
+st.sidebar.info("""
+Template dataset:
 
-'X1.1','X1.2','X1.3','X1.4','X1.5',
+Demografi:
+- Jenis Kelamin
+- Usia
+- Domisili
+- Lama Penggunaan Instagram
+- Rata-rata Durasi Penggunaan Instagram per Hari
+- Aktivitas Instagram yang Paling Sering Dilakukan
 
-'X2.1','X2.3','X2.4','X2.5',
+Variabel:
+- X1.1 — X1.5
+- X2.1 — X2.5
+- Y1 — Y5
+""")
 
-'Y1','Y2','Y3','Y4','Y5'
+with open("dataset.csv","rb") as f:
+    st.sidebar.download_button(
+        "⬇ Download Template",
+        data=f,
+        file_name="template_dataset.csv",
+        mime="text/csv"
+    )
 
-]
-
-missing=[x for x in required_cols if x not in df.columns]
-
-if missing:
-
-    st.error(f"Kolom tidak ditemukan: {missing}")
-
-    st.stop()
-
-# =====================================================
-# SCORE CALCULATION
-# =====================================================
+# =======================
+# SCORE
+# =======================
 
 X1=['X1.1','X1.2','X1.3','X1.4','X1.5']
-
-X2=['X2.1','X2.3','X2.4','X2.5']
-
+X2=['X2.1','X2.2','X2.3','X2.4','X2.5']
 Y=['Y1','Y2','Y3','Y4','Y5']
 
-df['Skor Algoritma']=df[X1].mean(axis=1)
+df['Algorithm Score']=df[X1].mean(axis=1)
+df['Echo Score']=df[X2].mean(axis=1)
+df['Risk Score']=df[Y].mean(axis=1)
 
-df['Skor Echo']=df[X2].mean(axis=1)
-
-df['Skor Risiko']=df[Y].mean(axis=1)
-
-# =====================================================
+# =======================
 # FILTER
-# =====================================================
+# =======================
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("🎯 Filter")
 
 gender=st.sidebar.multiselect(
 "Jenis Kelamin",
@@ -156,280 +133,253 @@ df['Usia'].unique(),
 default=df['Usia'].unique()
 )
 
+durasi=st.sidebar.multiselect(
+"Durasi Penggunaan",
+df['Rata-rata Durasi Penggunaan Instagram per Hari'].unique(),
+default=df['Rata-rata Durasi Penggunaan Instagram per Hari'].unique()
+)
+
 df=df[
-
 (df['Jenis Kelamin'].isin(gender))
-
 &
-
 (df['Usia'].isin(usia))
-
+&
+(df['Rata-rata Durasi Penggunaan Instagram per Hari'].isin(durasi))
 ]
 
-# =====================================================
-# HEADER
-# =====================================================
+# =======================
+# TITLE
+# =======================
 
-st.title("Instagram Digital Addiction Risk Analytics Dashboard")
+st.title("📊 Instagram Digital Addiction Risk Analytics Dashboard")
 
 st.markdown("""
-Dashboard analitik interaktif berbasis penelitian mengenai:
+Dashboard analitik penelitian berbasis:
 
-**Algoritma Rekomendasi Konten — Echo Chamber — Risiko Adiksi Digital Instagram**
+**Algoritma Rekomendasi Konten — Echo Chamber — Risiko Adiksi Digital**
 """)
 
-# =====================================================
+# =======================
 # KPI
-# =====================================================
+# =======================
 
-avg_alg=round(df['Skor Algoritma'].mean(),2)
+c1,c2,c3,c4=st.columns(4)
 
-avg_echo=round(df['Skor Echo'].mean(),2)
+with c1:
+    st.markdown(f"""
+<div class="metric-card">
+<div class="metric-title">Total Responden</div>
+<div class="metric-value">{len(df)}</div>
+</div>
+""",unsafe_allow_html=True)
 
-avg_risk=round(df['Skor Risiko'].mean(),2)
+with c2:
+    st.markdown(f"""
+<div class="metric-card">
+<div class="metric-title">Algorithm Score</div>
+<div class="metric-value">{round(df['Algorithm Score'].mean(),2)}</div>
+</div>
+""",unsafe_allow_html=True)
 
-risk_level="RENDAH"
+with c3:
+    st.markdown(f"""
+<div class="metric-card">
+<div class="metric-title">Echo Score</div>
+<div class="metric-value">{round(df['Echo Score'].mean(),2)}</div>
+</div>
+""",unsafe_allow_html=True)
 
-if avg_risk>=4:
+with c4:
+    st.markdown(f"""
+<div class="metric-card">
+<div class="metric-title">Risk Score</div>
+<div class="metric-value">{round(df['Risk Score'].mean(),2)}</div>
+</div>
+""",unsafe_allow_html=True)
 
-    risk_level="TINGGI"
-
-elif avg_risk>=3:
-
-    risk_level="SEDANG"
-
-c1,c2,c3,c4,c5=st.columns(5)
-
-c1.metric("Total Responden",len(df))
-
-c2.metric("Skor Algoritma",avg_alg)
-
-c3.metric("Skor Echo Chamber",avg_echo)
-
-c4.metric("Skor Risiko",avg_risk)
-
-c5.metric("Level Risiko",risk_level)
-
-# =====================================================
+# =======================
 # TABS
-# =====================================================
+# =======================
 
-tab1,tab2,tab3,tab4,tab5=st.tabs([
-
+tabs=st.tabs([
 "Overview",
-
 "Risk Analytics",
-
 "Behavioral Insight",
-
-"SmartPLS",
-
-"Mitigasi"
-
+"SmartPLS Result",
+"Mitigation"
 ])
 
-# =====================================================
+# =======================
 # OVERVIEW
-# =====================================================
+# =======================
 
-with tab1:
+with tabs[0]:
 
     col1,col2=st.columns(2)
 
     with col1:
 
         fig=px.histogram(
-
             df,
-
-            x='Skor Risiko',
-
-            nbins=10,
-
-            color_discrete_sequence=['#3B82F6']
-
+            x='Risk Score',
+            nbins=12,
+            color_discrete_sequence=['#ef4444']
         )
 
-        st.plotly_chart(fig,use_container_width=True)
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 
     with col2:
 
         fig2=px.pie(
-
             df,
-
             names='Jenis Kelamin',
-
-            hole=.5
-
-        )
-
-        st.plotly_chart(fig2,use_container_width=True)
-
-# =====================================================
-# RISK ANALYTICS
-# =====================================================
-
-with tab2:
-
-    col1,col2=st.columns(2)
-
-    with col1:
-
-        gauge=go.Figure(go.Indicator(
-
-            mode="gauge+number",
-
-            value=avg_risk,
-
-            title={'text':'Indeks Risiko Digital'},
-
-            gauge={
-
-                'axis':{'range':[0,5]},
-
-                'bar':{'color':'red'}
-
-            }
-
-        ))
-
-        st.plotly_chart(gauge,use_container_width=True)
-
-    with col2:
-
-        corr=df[
-
-        ['Skor Algoritma','Skor Echo','Skor Risiko']
-
-        ].corr()
-
-        heat=px.imshow(
-
-            corr,
-
-            text_auto=True,
-
-            color_continuous_scale='RdBu'
-
+            hole=0.5
         )
 
         st.plotly_chart(
-
-            heat,
-
+            fig2,
             use_container_width=True
-
         )
 
-# =====================================================
-# BEHAVIORAL
-# =====================================================
+    st.subheader("Distribusi Usia")
 
-with tab3:
-
-    radar=go.Figure()
-
-    radar.add_trace(go.Scatterpolar(
-
-        r=[avg_alg,avg_echo,avg_risk],
-
-        theta=[
-
-        'Algoritma',
-
-        'Echo',
-
-        'Risiko'
-
-        ],
-
-        fill='toself'
-
-    ))
+    usia_fig=px.bar(
+        df['Usia'].value_counts().reset_index(),
+        x='Usia',
+        y='count'
+    )
 
     st.plotly_chart(
-
-        radar,
-
+        usia_fig,
         use_container_width=True
-
     )
+
+# =======================
+# RISK ANALYTICS
+# =======================
+
+with tabs[1]:
+
+    corr=df[
+    [
+        'Algorithm Score',
+        'Echo Score',
+        'Risk Score'
+    ]
+    ].corr()
+
+    heat=px.imshow(
+        corr,
+        text_auto=True,
+        color_continuous_scale='RdBu'
+    )
+
+    st.plotly_chart(
+        heat,
+        use_container_width=True
+    )
+
+    scatter=px.scatter(
+        df,
+        x='Echo Score',
+        y='Risk Score',
+        color='Usia',
+        size='Algorithm Score'
+    )
+
+    st.plotly_chart(
+        scatter,
+        use_container_width=True
+    )
+
+# =======================
+# BEHAVIOR
+# =======================
+
+with tabs[2]:
 
     fig3=px.box(
-
         df,
-
         x='Usia',
-
-        y='Skor Risiko',
-
+        y='Risk Score',
         color='Usia'
-
     )
 
     st.plotly_chart(
-
         fig3,
-
         use_container_width=True
-
     )
 
-# =====================================================
-# SMARTPLS RESULT
-# =====================================================
+    behavior=(
+        df.groupby(
+        'Aktivitas Instagram yang Paling Sering Dilakukan'
+        )['Risk Score']
+        .mean()
+        .reset_index()
+    )
 
-with tab4:
+    fig4=px.bar(
+        behavior,
+        x='Aktivitas Instagram yang Paling Sering Dilakukan',
+        y='Risk Score',
+        color='Risk Score'
+    )
 
-    st.subheader("Outer Loading")
+    st.plotly_chart(
+        fig4,
+        use_container_width=True
+    )
+
+# =======================
+# SMARTPLS
+# =======================
+
+with tabs[3]:
+
+    st.subheader("Validasi SmartPLS")
 
     outer=pd.DataFrame({
 
     'Indikator':[
 
     'X1.1','X1.2','X1.3','X1.4','X1.5',
-
     'X2.1','X2.3','X2.4','X2.5',
-
     'Y1','Y2','Y3','Y4','Y5'
 
     ],
 
-    'Loading':[
+    'Outer Loading':[
 
     0.860,0.757,0.750,0.868,0.798,
-
     0.816,0.757,0.712,0.802,
-
     0.820,0.891,0.783,0.718,0.874
 
     ]
 
     })
 
-    st.dataframe(outer,use_container_width=True)
+    st.dataframe(
+        outer,
+        use_container_width=True
+    )
 
-    st.subheader("Reliability & Validity")
+    construct=pd.DataFrame({
 
-    reli=pd.DataFrame({
+    'Construct':[
 
-    'Konstruk':[
-
-    'Algoritma',
-
+    'Algoritma Rekomendasi Konten',
     'Echo Chamber',
-
-    'Risiko Digital'
+    'Risiko Adiksi Digital'
 
     ],
 
     'AVE':[
 
     0.653,
-
     0.597,
-
     0.672
 
     ],
@@ -437,109 +387,77 @@ with tab4:
     'CR':[
 
     0.904,
-
     0.855,
-
     0.911
 
     ]
 
     })
 
-    st.dataframe(reli,use_container_width=True)
+    st.dataframe(
+        construct,
+        use_container_width=True
+    )
 
-    st.subheader("Uji Hipotesis")
+    st.success(
+        "Model memenuhi validitas konvergen dan construct reliability."
+    )
 
-    hypo=pd.DataFrame({
+# =======================
+# MITIGATION
+# =======================
 
-    'Path':[
+with tabs[4]:
 
-    'Algoritma → Risiko',
+    risk=df['Risk Score'].mean()
 
-    'Echo → Risiko'
+    st.subheader("Rekomendasi Mitigasi")
 
-    ],
-
-    'P Value':[
-
-    0.600,
-
-    0.000
-
-    ]
-
-    })
-
-    st.dataframe(hypo,use_container_width=True)
-
-# =====================================================
-# MITIGASI
-# =====================================================
-
-with tab5:
-
-    if avg_risk>=4:
+    if risk>=4:
 
         st.error("""
+RISIKO TINGGI
 
-### Risiko Tinggi
+• Batasi screen time Instagram
 
-Mitigasi yang direkomendasikan:
+• Diversifikasi konsumsi konten
 
-• Pembatasan screen time
+• Evaluasi pola penggunaan harian
 
-• Diversifikasi konten
+• Tingkatkan literasi digital
 
-• Edukasi literasi digital
-
-• Monitoring perilaku penggunaan
-
+• Gunakan fitur reminder penggunaan aplikasi
 """)
 
-    elif avg_risk>=3:
+    elif risk>=3:
 
         st.warning("""
-
-### Risiko Sedang
-
-Mitigasi:
-
-• Evaluasi pola konsumsi konten
+RISIKO SEDANG
 
 • Monitoring durasi penggunaan
 
-• Pengurangan exposure algoritmik
+• Evaluasi algoritma konsumsi konten
 
+• Kurangi penggunaan impulsif
 """)
 
     else:
 
         st.success("""
+RISIKO RENDAH
 
-### Risiko Rendah
-
-Penggunaan Instagram relatif terkendali.
-
+Perilaku penggunaan Instagram relatif terkendali.
 """)
 
-# =====================================================
-# DOWNLOAD
-# =====================================================
-
-st.download_button(
-
-"Download Dataset Hasil Analisis",
-
-df.to_csv(index=False),
-
-"processed_dataset.csv",
-
-"text/csv"
-
-)
+# =======================
+# RAW DATA
+# =======================
 
 st.markdown("---")
 
-st.caption(
-"Instagram Digital Addiction Risk Analytics Dashboard | Streamlit • Plotly • SmartPLS Research Artifact"
-)
+with st.expander("📄 Lihat Dataset"):
+
+    st.dataframe(
+        df,
+        use_container_width=True
+    )
