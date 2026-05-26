@@ -1207,3 +1207,187 @@ Sebaliknya, Algoritma Rekomendasi Konten tidak menunjukkan pengaruh langsung yan
 
 Hasil ini mengindikasikan bahwa risiko adiksi lebih dipengaruhi oleh homogenitas informasi dan keterpaparan pada sudut pandang yang berulang dibandingkan mekanisme rekomendasi konten itu sendiri.
 """)
+# ======================================================
+# MITIGASI
+# ======================================================
+
+with tabs[4]:
+
+    st.subheader(
+        "Digital Risk Assessment & Responsible Innovation"
+    )
+
+    risk = df["Skor Risiko"].mean()
+
+# ======================================================
+# RISK STATUS
+# ======================================================
+
+    if risk >= 4:
+
+        level = "TINGGI"
+
+    elif risk >= 3:
+
+        level = "SEDANG"
+
+    else:
+
+        level = "RENDAH"
+
+    st.metric(
+        "Status Risiko Digital Saat Ini",
+        level
+    )
+
+# ======================================================
+# RISK MATRIX
+# ======================================================
+
+    st.markdown("---")
+
+    st.markdown(
+        "### Matriks Risiko Digital"
+    )
+
+    risk_matrix = pd.DataFrame({
+
+        "Area Risiko":[
+
+            "Echo Chamber",
+
+            "Filter Bubble",
+
+            "Ketergantungan Digital",
+
+            "Overconsumption Content",
+
+            "Kesehatan Mental"
+
+        ],
+
+        "Tingkat Risiko":[
+
+            "Tinggi",
+
+            "Sedang",
+
+            "Tinggi",
+
+            "Sedang",
+
+            "Sedang"
+
+        ]
+
+    })
+
+    st.dataframe(
+        risk_matrix,
+        use_container_width=True
+    )
+
+# ======================================================
+# MITIGATION PLAN
+# ======================================================
+
+    st.markdown("---")
+
+    st.markdown(
+        "### Rencana Mitigasi Risiko"
+    )
+
+    mitigation = pd.DataFrame({
+
+        "Area Risiko":[
+
+            "Echo Chamber",
+
+            "Ketergantungan Digital",
+
+            "Filter Bubble",
+
+            "Privasi Data"
+
+        ],
+
+        "Strategi Teknis":[
+
+            "Diversifikasi konten",
+
+            "Screen time monitoring",
+
+            "Rekomendasi konten alternatif",
+
+            "Kontrol akses data"
+
+        ],
+
+        "Strategi Manajerial":[
+
+            "Literasi digital",
+
+            "Edukasi penggunaan sehat",
+
+            "Kebijakan transparansi algoritma",
+
+            "Kebijakan perlindungan data"
+
+        ]
+
+    })
+
+    st.dataframe(
+        mitigation,
+        use_container_width=True
+    )
+
+# ======================================================
+# RESPONSIBLE INNOVATION
+# ======================================================
+
+    st.markdown("---")
+
+    st.markdown(
+        "### Responsible Innovation"
+    )
+
+    st.info("""
+Pengembangan dashboard tidak hanya berfokus pada analisis data, tetapi juga mempertimbangkan dampak sosial teknologi.
+
+Prinsip yang digunakan:
+
+• Transparansi Analitik
+
+• Perlindungan Privasi Pengguna
+
+• Literasi Digital
+
+• Pengawasan Manusia (Human-in-the-Loop)
+
+• Penggunaan AI yang Bertanggung Jawab
+""")
+
+# ======================================================
+# FUTURE DEVELOPMENT
+# ======================================================
+
+    st.markdown("---")
+
+    st.markdown(
+        "### Pengembangan Sistem Selanjutnya"
+    )
+
+    st.success("""
+Dashboard dapat dikembangkan menjadi platform Digital Risk Analytics berbasis Artificial Intelligence yang mampu:
+
+• Mengidentifikasi pola risiko secara otomatis.
+
+• Mendeteksi kecenderungan Echo Chamber.
+
+• Memberikan rekomendasi mitigasi yang lebih personal.
+
+• Mendukung monitoring perilaku digital secara berkelanjutan.
+
+Pendekatan ini sejalan dengan konsep Responsible Innovation dan Transformasi Digital yang berkelanjutan.
+""")
