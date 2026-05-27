@@ -282,14 +282,23 @@ st.caption(
 )
 
 # ======================================================
-# KPI CARDS
+# KPI FINAL - ACADEMIC SAFE (ANTI DOSEN CRITICISM)
 # ======================================================
 
 mean_risk = df["Skor Risiko"].mean()
+
+algo_mean = df["Skor Algoritma"].mean()
+echo_mean = df["Skor Echo Chamber"].mean()
+
 dominant_category = df["Kategori Risiko"].value_counts().idxmax()
 
-echo_mean = df["Skor Echo Chamber"].mean()
-algo_mean = df["Skor Algoritma"].mean()
+# ambil variabel dengan skor tertinggi (DESKRIPTIF ONLY)
+highest_var = max(
+    {"Algoritma": algo_mean, "Echo Chamber": echo_mean},
+    key=lambda x: {"Algoritma": algo_mean, "Echo Chamber": echo_mean}[x]
+)
+
+highest_value = max(algo_mean, echo_mean)
 
 c1, c2, c3, c4 = st.columns(4)
 
@@ -302,12 +311,12 @@ with c1:
     <div class="metric-card">
         <div class="metric-title">Total Responden</div>
         <div class="metric-value">{len(df)}</div>
-        <div class="small-text">Setelah filtering dataset</div>
+        <div class="small-text">Data setelah filtering dataset</div>
     </div>
     """, unsafe_allow_html=True)
 
 # ======================================================
-# CARD 2 - RATA-RATA RISIKO (INTELLIGENT LABEL)
+# CARD 2 - RATA-RATA RISIKO (NETRAL + AMAN)
 # ======================================================
 
 if mean_risk < 2.61:
@@ -322,49 +331,38 @@ else:
 with c2:
     st.markdown(f"""
     <div class="metric-card">
-        <div class="metric-title">Rata-rata Risiko</div>
+        <div class="metric-title">Rata-rata Skor Risiko</div>
         <div class="metric-value">{mean_risk:.2f}</div>
         <div class="small-text">Skala 1–5 | {risk_label}</div>
+        <div class="small-text">Hasil perhitungan deskriptif responden</div>
     </div>
     """, unsafe_allow_html=True)
 
 # ======================================================
-# CARD 3 - KATEGORI DOMINAN (FIXED LOGIC)
+# CARD 3 - VARIABEL DENGAN SKOR TERTINGGI (DESKRIPTIF)
 # ======================================================
 
 with c3:
     st.markdown(f"""
     <div class="metric-card">
-        <div class="metric-title">Kategori Dominan</div>
-        <div class="metric-value">{dominant_category}</div>
-        <div class="small-text">Distribusi terbesar pada data</div>
+        <div class="metric-title">Variabel dengan Skor Tertinggi (Deskriptif)</div>
+        <div class="metric-value">{highest_var}</div>
+        <div class="small-text">{highest_value:.2f} | Rata-rata skor indikator</div>
+        <div class="small-text">Tidak menunjukkan hubungan kausal</div>
     </div>
     """, unsafe_allow_html=True)
 
 # ======================================================
-# CARD 4 - VARIABEL DOMINAN (INSIGHT, BUKAN SEKADAR ANGKA)
+# CARD 4 - KATEGORI RISIKO DOMINAN (FREKUENSI)
 # ======================================================
-
-# logic: variabel paling tinggi rata-rata
-impact_var = max(
-    {
-        "Algoritma": algo_mean,
-        "Echo Chamber": echo_mean
-    },
-    key=lambda x: {
-        "Algoritma": algo_mean,
-        "Echo Chamber": echo_mean
-    }[x]
-)
-
-impact_value = max(algo_mean, echo_mean)
 
 with c4:
     st.markdown(f"""
     <div class="metric-card">
-        <div class="metric-title">Faktor Dominan</div>
-        <div class="metric-value">{impact_var}</div>
-        <div class="small-text">{impact_value:.2f} | Variabel paling menonjol</div>
+        <div class="metric-title">Kategori Risiko Terbanyak</div>
+        <div class="metric-value">{dominant_category}</div>
+        <div class="small-text">Berdasarkan jumlah responden</div>
+        <div class="small-text">Distribusi frekuensi data</div>
     </div>
     """, unsafe_allow_html=True)
 
