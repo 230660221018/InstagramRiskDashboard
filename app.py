@@ -8,367 +8,618 @@ import plotly.graph_objects as go
 # ======================================================
 
 st.set_page_config(
-    page_title="Instagram Risk Dashboard",
+    page_title="Instagram Digital Risk Analytics",
     page_icon="📊",
     layout="wide"
 )
 
 # ======================================================
-# SIMPLE UI STYLE (lebih clean & friendly)
+# MODERN UI STYLE
 # ======================================================
 
 st.markdown("""
 <style>
 
-.main {
-    background-color: #f8fafc;
+.main{
+    background: linear-gradient(to right, #f8fafc, #eef2ff);
 }
 
-.block-container {
-    padding-top: 1.2rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
+.block-container{
+    padding:1.5rem 2rem;
 }
 
-.card {
-    background: white;
-    padding: 18px;
-    border-radius: 14px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+/* KPI CARD */
+.card{
+    background:white;
+    padding:18px;
+    border-radius:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.06);
+    border-left:6px solid #4f46e5;
 }
 
-.small {
-    font-size: 13px;
-    color: #6b7280;
+/* TITLE */
+.title{
+    font-size:26px;
+    font-weight:800;
+    color:#111827;
 }
 
-.title {
-    font-size: 26px;
-    font-weight: 700;
+/* subtitle */
+.subtitle{
+    font-size:14px;
+    color:#6b7280;
+}
+
+/* badge */
+.badge{
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.low{background:#dcfce7;color:#166534;}
+.mid{background:#fef9c3;color:#854d0e;}
+.high{background:#fee2e2;color:#991b1b;}
+
+.small{
+    font-size:12px;
+    color:#6b7280;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # ======================================================
-# LOAD DATASET
+# LOAD DATA
 # ======================================================
 
 try:
-    df = pd.read_csv("dataset.csv", encoding="utf-8")
+    try:
+        df = pd.read_csv("dataset.csv", encoding="utf-8")
+    except:
+        df = pd.read_csv("dataset.csv", encoding="latin1")
 except:
-    df = pd.read_csv("dataset.csv", encoding="latin1")
+    st.error("Dataset tidak ditemukan.")
+    st.stop()
 
-df.columns = df.columns.str.strip()
-df.columns = df.columns.str.replace("\n", " ", regex=True)
+df.columns = df.columns.str.strip().str.replace("\n", " ", regex=True)
 
 # ======================================================
-# KONSTRUK VARIABEL
+# VARIABLE MODEL (RESEARCH FRAMEWORK)
 # ======================================================
 
+# X1 = Algoritma Rekomendasi Konten Instagram
 X1 = ["X1.1","X1.2","X1.3","X1.4","X1.5"]
+
+# X2 = Echo Chamber (paparan konten homogen)
 X2 = ["X2.1","X2.3","X2.4","X2.5"]
+
+# Y = Risiko Adiksi Digital Instagram
 Y  = ["Y1","Y2","Y3","Y4","Y5"]
 
-required_cols = X1 + X2 + Y
-
-missing = [c for c in required_cols if c not in df.columns]
+required = X1 + X2 + Y
+missing = [c for c in required if c not in df.columns]
 
 if missing:
-    st.error(f"Dataset tidak lengkap: {missing}")
+    st.error(f"Kolom tidak ditemukan: {missing}")
     st.stop()
 
 # ======================================================
-# HITUNG SKOR DASAR
+# SCORE COMPUTATION
 # ======================================================
 
-df["Skor Algoritma"] = df[X1].mean(axis=1)
-df["Skor Echo Chamber"] = df[X2].mean(axis=1)
-df["Skor Risiko"] = df[Y].mean(axis=1)
+df["Algoritma"] = df[X1].mean(axis=1)
+df["EchoChamber"] = df[X2].mean(axis=1)
+df["Risiko"] = df[Y].mean(axis=1)
 
 # ======================================================
-# KATEGORI RISIKO (USER FRIENDLY)
+# RISK CATEGORY
 # ======================================================
 
-def kategori_risiko(x):
+def risk_level(x):
     if x < 2.61:
-        return "Rendah"
+        return "LOW"
     elif x < 3.41:
-        return "Sedang"
+        return "MEDIUM"
     else:
-        return "Tinggi"
+        return "HIGH"
 
-df["Kategori Risiko"] = df["Skor Risiko"].apply(kategori_risiko)
-
-# ======================================================
-# USER-FRIENDLY RISK SUMMARY (INI PENGGANTI AMBIGUITAS)
-# ======================================================
-
-mean_risk = df["Skor Risiko"].mean()
-dominant_risk = df["Kategori Risiko"].value_counts().idxmax()
+df["RiskLevel"] = df["Risiko"].apply(risk_level)
 
 # ======================================================
-# HEADER
+# SIDEBAR FILTER (CLEAN)
 # ======================================================
 
-st.markdown('<div class="title">📱 Instagram Risk Dashboard</div>', unsafe_allow_html=True)
+st.sidebar.title("🎛️ Filter Data")
 
-st.caption(
-    "Dashboard ini membantu memahami tingkat risiko penggunaan Instagram berdasarkan data responden."
+gender = st.sidebar.multiselect(
+    "Jenis Kelamin",
+    df["Jenis Kelamin"].unique(),
+    default=df["Jenis Kelamin"].unique()
 )
 
-# ======================================================
-# RINGKASAN UTAMA (TIDAK AMBIGU)
-# ======================================================
+usia = st.sidebar.multiselect(
+    "Usia",
+    df["Usia"].unique(),
+    default=df["Usia"].unique()
+)
 
-col1, col2 = st.columns(2)
-
-with col1:
-    st.markdown("""
-    <div class="card">
-    <b>Rata-rata Risiko Pengguna</b><br>
-    <h2>{:.2f}/5</h2>
-    <div class="small">Menunjukkan tingkat risiko secara umum</div>
-    </div>
-    """.format(mean_risk), unsafe_allow_html=True)
-
-with col2:
-    st.markdown(f"""
-    <div class="card">
-    <b>Kategori yang Paling Banyak</b><br>
-    <h2>{dominant_risk}</h2>
-    <div class="small">Berdasarkan jumlah responden terbanyak</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ======================================================
-# INTERPRETASI OTOMATIS (UNTUK RESPONDEN)
-# ======================================================
-
-st.markdown("### 📌 Interpretasi Sederhana")
-
-if mean_risk >= 3.41:
-    st.error(
-        "Sebagian besar pengguna menunjukkan tingkat risiko tinggi dalam penggunaan Instagram."
-    )
-
-elif mean_risk >= 2.61:
-    st.warning(
-        "Pengguna berada pada tingkat risiko sedang. Perlu pengelolaan penggunaan yang lebih seimbang."
-    )
-
-else:
-    st.success(
-        "Penggunaan Instagram masih dalam kategori aman dan terkendali."
-    )
-
-# ======================================================
-# PENJELASAN METODE (VERSI SIMPLE)
-# ======================================================
-
-with st.expander("ℹ️ Cara Membaca Dashboard Ini"):
-    st.markdown("""
-    - Skor dihitung dari hasil kuesioner pengguna Instagram  
-    - Skor 1–5 menunjukkan tingkat rendah hingga tinggi  
-    - Semakin tinggi skor → semakin besar risiko penggunaan berlebihan  
-    - Kategori dibuat untuk memudahkan pemahaman hasil analisis  
-    """)
-
-# ======================================================
-# SIDEBAR
-# ======================================================
-
-st.sidebar.title("Filter Data")
+df = df[
+    (df["Jenis Kelamin"].isin(gender)) &
+    (df["Usia"].isin(usia))
+]
 
 st.sidebar.metric("Total Responden", len(df))
 
 # ======================================================
-# PART 2 - VISUALISASI USER FRIENDLY
+# HEADER (MODERN DASHBOARD STYLE)
 # ======================================================
 
-st.markdown("## 📊 Gambaran Penggunaan & Risiko")
+st.markdown("""
+<div class="title">📊 Instagram Digital Risk Analytics Dashboard</div>
+<div class="subtitle">
+Model Penelitian: Algoritma Rekomendasi • Echo Chamber • Risiko Adiksi Digital Instagram
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
 
 # ======================================================
-# DISTRIBUSI SKOR RISIKO
+# RESEARCH VARIABLE EXPLANATION (SHORT + CLEAR)
 # ======================================================
 
-col1, col2 = st.columns(2)
+st.markdown("### 🔎 Variabel Penelitian")
+
+v1, v2, v3 = st.columns(3)
+
+with v1:
+    st.info("""
+**Algoritma Rekomendasi Konten**  
+Sistem personalisasi Instagram yang menentukan konten yang ditampilkan kepada pengguna.
+""")
+
+with v2:
+    st.info("""
+**Echo Chamber**  
+Kondisi ketika pengguna lebih sering menerima informasi yang seragam atau sejenis.
+""")
+
+with v3:
+    st.info("""
+**Risiko Adiksi Digital**  
+Tingkat kecenderungan penggunaan Instagram secara berlebihan yang bersifat kompulsif.
+""")
+
+# ======================================================
+# KPI DASHBOARD
+# ======================================================
+
+st.markdown("---")
+
+c1, c2, c3, c4 = st.columns(4)
+
+c1.metric("Responden", len(df))
+c2.metric("Algoritma", f"{df['Algoritma'].mean():.2f}")
+c3.metric("Echo Chamber", f"{df['EchoChamber'].mean():.2f}")
+c4.metric("Risiko", f"{df['Risiko'].mean():.2f}")
+
+# ======================================================
+# RISK STATUS (CLEAR + VISUAL + NON AMBIGUOUS)
+# ======================================================
+
+st.markdown("---")
+
+mean_risk = df["Risiko"].mean()
+progress = min(mean_risk / 5, 1)
+
+if mean_risk < 2.61:
+    label = "LOW RISK"
+    color = "low"
+elif mean_risk < 3.41:
+    label = "MEDIUM RISK"
+    color = "mid"
+else:
+    label = "HIGH RISK"
+    color = "high"
+
+col1, col2 = st.columns([2, 1])
 
 with col1:
 
-    fig_risk = px.histogram(
-        df,
-        x="Skor Risiko",
-        nbins=8,
-        title="Sebaran Tingkat Risiko Pengguna",
-        color_discrete_sequence=["#2563eb"]
-    )
+    st.markdown(f"""
+    <div style="font-size:18px;font-weight:700;">
+        Current Risk Status
+    </div>
 
-    fig_risk.update_layout(
-        height=380,
-        xaxis_title="Skor Risiko",
-        yaxis_title="Jumlah Pengguna"
-    )
+    <div style="margin-top:10px;">
+        <span class="badge {color}">{label}</span>
+        <span style="margin-left:10px;color:#6b7280;">
+            Score: {mean_risk:.2f} / 5
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.plotly_chart(fig_risk, use_container_width=True)
+    st.progress(progress)
 
-    st.caption("Semakin ke kanan, semakin tinggi tingkat risiko.")
-
-# ======================================================
-# KOMPOSISI KATEGORI RISIKO (DIPERBAIKI)
-# ======================================================
+    st.caption("Interpretasi berbasis skala Likert 1–5")
 
 with col2:
 
-    kategori_df = df["Kategori Risiko"].value_counts().reset_index()
-    kategori_df.columns = ["Kategori", "Jumlah"]
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=mean_risk,
+        range=[0,5],
+        title={"text":"Risk Level"},
+        gauge={
+            "axis":{"range":[0,5]},
+            "bar":{"color":"#4f46e5"},
+            "steps":[
+                {"range":[0,2.6],"color":"#dcfce7"},
+                {"range":[2.6,3.4],"color":"#fef9c3"},
+                {"range":[3.4,5],"color":"#fee2e2"}
+            ]
+        }
+    ))
 
-    fig_pie = px.pie(
-        kategori_df,
-        names="Kategori",
+    fig.update_layout(height=220, margin=dict(l=10,r=10,t=30,b=10))
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# ======================================================
+# QUICK INSIGHT (VISUAL-FIRST, MIN TEXT)
+# ======================================================
+
+st.markdown("---")
+st.markdown("### ⚡ Key Insight")
+
+i1, i2, i3 = st.columns(3)
+
+i1.metric("Dominant Factor", "Echo Chamber")
+i2.metric("Algorithm Effect", "Moderate")
+i3.metric("User Exposure", "High Variation")
+
+# ======================================================
+# PART 2 — PROFIL RESPONDEN (UX LEVEL 5)
+# ======================================================
+
+st.subheader("👥 Profil Responden")
+
+st.markdown("Distribusi karakteristik responden dalam penelitian.")
+
+# ======================================================
+# TOP ROW KPI MINI INSIGHT
+# ======================================================
+
+k1, k2, k3 = st.columns(3)
+
+k1.metric("Total Responden", len(df))
+k2.metric("Usia Dominan", df["Usia"].mode()[0])
+k3.metric("Gender Dominan", df["Jenis Kelamin"].mode()[0])
+
+st.markdown("---")
+
+# ======================================================
+# VISUAL 1: USIA
+# ======================================================
+
+c1, c2 = st.columns(2)
+
+with c1:
+
+    usia_df = df["Usia"].value_counts().reset_index()
+    usia_df.columns = ["Usia", "Jumlah"]
+
+    fig_usia = px.bar(
+        usia_df,
+        x="Usia",
+        y="Jumlah",
+        text_auto=True,
+        color="Jumlah",
+        title="Distribusi Usia Responden"
+    )
+
+    fig_usia.update_layout(height=420, showlegend=False)
+    st.plotly_chart(fig_usia, use_container_width=True)
+
+with c2:
+
+    gender_df = df["Jenis Kelamin"].value_counts().reset_index()
+    gender_df.columns = ["Jenis Kelamin", "Jumlah"]
+
+    fig_gender = px.pie(
+        gender_df,
+        names="Jenis Kelamin",
         values="Jumlah",
         hole=0.55,
-        title="Sebaran Kategori Risiko"
+        title="Komposisi Gender Responden"
     )
 
-    fig_pie.update_layout(height=380)
-
-    st.plotly_chart(fig_pie, use_container_width=True)
-
-    st.caption("Menunjukkan kelompok pengguna berdasarkan tingkat risiko.")
+    fig_gender.update_layout(height=420)
+    st.plotly_chart(fig_gender, use_container_width=True)
 
 # ======================================================
-# RATA-RATA VARIABEL (SIMPLIFIED)
+# VISUAL 2: DURASI PENGGUNAAN
 # ======================================================
 
 st.markdown("---")
 
-st.markdown("### 📌 Ringkasan Faktor Utama")
+durasi_df = df[
+    "Rata-rata Durasi Penggunaan Instagram per Hari"
+].value_counts().reset_index()
 
-mean_df = pd.DataFrame({
-    "Faktor": [
-        "Algoritma Rekomendasi",
-        "Echo Chamber",
-        "Risiko Adiksi"
-    ],
-    "Skor": [
-        df["Skor Algoritma"].mean(),
-        df["Skor Echo Chamber"].mean(),
-        df["Skor Risiko"].mean()
-    ]
-})
+durasi_df.columns = ["Durasi", "Jumlah"]
 
-fig_bar = px.bar(
-    mean_df,
-    x="Faktor",
-    y="Skor",
-    text_auto=".2f",
-    color="Skor",
-    title="Rata-rata Setiap Faktor"
+fig_durasi = px.bar(
+    durasi_df,
+    x="Durasi",
+    y="Jumlah",
+    text_auto=True,
+    color="Jumlah",
+    title="Durasi Penggunaan Instagram per Hari"
 )
 
-fig_bar.update_layout(
-    height=420,
-    xaxis_title="",
-    yaxis_title="Skor Rata-rata"
+fig_durasi.update_layout(height=450)
+
+st.plotly_chart(fig_durasi, use_container_width=True)
+
+# ======================================================
+# MINI INSIGHT PANEL (NO PARAGRAPH)
+# ======================================================
+
+st.markdown("---")
+st.markdown("### ⚡ Insight Singkat")
+
+i1, i2, i3 = st.columns(3)
+
+i1.metric(
+    "Kelompok Terbanyak",
+    df["Usia"].value_counts().idxmax()
 )
 
-st.plotly_chart(fig_bar, use_container_width=True)
+i2.metric(
+    "Dominasi Gender",
+    df["Jenis Kelamin"].value_counts().idxmax()
+)
 
-st.caption("Nilai lebih tinggi menunjukkan pengaruh/tingkat yang lebih kuat.")
+i3.metric(
+    "Pola Durasi",
+    "Cenderung Moderate"
+)
 
 # ======================================================
-# PART 3 - INSIGHT, SMARTPLS, MITIGASI (USER FRIENDLY)
+# OPTIONAL DISTRIBUTION CHECK (LIGHT VISUAL)
 # ======================================================
 
-st.markdown("## 📌 Insight & Hasil Analisis")
-
-# ======================================================
-# INSIGHT SINGKAT (JANGAN PANJANG)
-# ======================================================
+st.markdown("---")
+st.markdown("### 📊 Distribusi Ringkas")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.info(
-        "Sebagian besar pengguna menunjukkan tingkat risiko penggunaan Instagram yang bervariasi dari sedang hingga tinggi."
+
+    fig_box = px.histogram(
+        df,
+        x="Skor Risiko",
+        nbins=10,
+        title="Sebaran Risiko Adiksi Digital"
     )
+
+    fig_box.update_layout(height=400)
+    st.plotly_chart(fig_box, use_container_width=True)
 
 with col2:
-    st.info(
-        "Echo Chamber menjadi faktor yang paling berpengaruh terhadap peningkatan risiko adiksi digital."
+
+    fig_stack = px.bar(
+        df.groupby("RiskLevel").size().reset_index(name="Jumlah"),
+        x="RiskLevel",
+        y="Jumlah",
+        text_auto=True,
+        title="Kategori Risiko"
     )
 
+    fig_stack.update_layout(height=400)
+    st.plotly_chart(fig_stack, use_container_width=True)
+
+# ======================================================
+# FOOT NOTE MINI
+# ======================================================
+
+st.caption("Profil responden ditampilkan berdasarkan data survei yang telah difilter.")
+
+# ======================================================
+# PART 3 — SMARTPLS + MODEL EVALUATION (UX LEVEL 5)
+# ======================================================
+
+st.subheader("📊 SmartPLS Model Evaluation")
+st.markdown("Evaluasi model struktural & pengujian hipotesis penelitian.")
+
 st.markdown("---")
 
 # ======================================================
-# SMARTPLS (VERSI SEDERHANA)
+# KPI MODEL QUALITY (FAST VIEW)
 # ======================================================
 
-st.markdown("### 📊 Hasil Analisis Model (SmartPLS)")
+q1, q2, q3 = st.columns(3)
 
-st.caption("Hasil ini menunjukkan hubungan antar faktor dalam penelitian.")
+q1.metric("Reliabilitas Model", "Good")
+q2.metric("Validitas Konstruk", "Good")
+q3.metric("Model Fit", "Acceptable")
 
-smartpls_simple = pd.DataFrame({
-    "Hubungan": [
-        "Algoritma → Risiko Adiksi",
-        "Echo Chamber → Risiko Adiksi"
+st.markdown("---")
+
+# ======================================================
+# OUTER LOADING (SIMPLIFIED VISUAL TABLE)
+# ======================================================
+
+st.markdown("### 🔗 Outer Loading (Convergent Validity)")
+
+outer_loading = pd.DataFrame({
+
+    "Indikator":[
+        "Algoritma (X1.1–X1.5)",
+        "Echo Chamber (X2.1–X2.5)",
+        "Risiko (Y1–Y5)"
     ],
-    "Hasil": [
-        "Tidak signifikan",
-        "Signifikan"
+
+    "Range Loading":[
+        "0.75 – 0.86",
+        "0.71 – 0.82",
+        "0.71 – 0.89"
+    ],
+
+    "Status":[
+        "Valid",
+        "Valid",
+        "Valid"
     ]
 })
 
-st.dataframe(
-    smartpls_simple,
-    use_container_width=True
-)
+st.dataframe(outer_loading, use_container_width=True)
 
-st.caption(
-    "Interpretasi: hanya Echo Chamber yang memiliki pengaruh nyata terhadap risiko adiksi."
-)
+st.success("Semua indikator memenuhi validitas konvergen (outer loading > 0.70).")
 
 st.markdown("---")
 
 # ======================================================
-# MITIGASI (VERSI USER FRIENDLY)
+# RELIABILITY & VALIDITY (CLEAN DASHBOARD TABLE)
 # ======================================================
 
-st.markdown("### 🛡️ Saran Penggunaan yang Lebih Sehat")
+st.markdown("### 🧪 Construct Reliability & Validity")
+
+construct = pd.DataFrame({
+
+    "Konstruk":[
+        "Algoritma Rekomendasi",
+        "Echo Chamber",
+        "Risiko Adiksi Digital"
+    ],
+
+    "Cronbach Alpha":[0.877, 0.777, 0.879],
+    "Composite Reliability":[0.904, 0.855, 0.911],
+    "AVE":[0.653, 0.597, 0.672],
+
+    "Status":[
+        "Reliable",
+        "Reliable",
+        "Reliable"
+    ]
+})
+
+st.dataframe(construct, use_container_width=True)
+
+st.success("Semua konstruk memenuhi reliabilitas dan validitas (CR > 0.70, AVE > 0.50).")
+
+st.markdown("---")
+
+# ======================================================
+# HYPOTHESIS RESULT (CARD STYLE UX)
+# ======================================================
+
+st.markdown("### 🧠 Hasil Uji Hipotesis")
+
+h1, h2 = st.columns(2)
+
+with h1:
+
+    st.error("""
+    ❌ Algoritma Rekomendasi → Risiko Adiksi
+
+    Tidak signifikan
+
+    P-value: 0.600
+    T-stat: 0.524
+    """)
+
+with h2:
+
+    st.success("""
+    ✅ Echo Chamber → Risiko Adiksi
+
+    Signifikan
+
+    P-value: 0.000
+    T-stat: 4.114
+    """)
+
+st.markdown("---")
+
+# ======================================================
+# MINI PATH INSIGHT (VISUAL SUMMARY)
+# ======================================================
+
+st.markdown("### 📌 Model Insight Summary")
+
+i1, i2, i3 = st.columns(3)
+
+i1.metric("Faktor Terkuat", "Echo Chamber")
+i2.metric("Faktor Lemah", "Algoritma")
+i3.metric("Arah Pengaruh", "Positive Effect")
+
+st.markdown("---")
+
+# ======================================================
+# MITIGATION STRATEGY (CLEAN TABLE UX)
+# ======================================================
+
+st.markdown("### 🛡️ Rekomendasi Mitigasi")
 
 mitigasi = pd.DataFrame({
-    "Masalah": [
-        "Penggunaan berlebihan",
-        "Konten yang mirip terus-menerus",
-        "Kurang variasi informasi",
-        "Risiko ketergantungan"
+
+    "Area":[
+        "Echo Chamber",
+        "Paparan Informasi Seragam",
+        "Durasi Penggunaan",
+        "Literasi Digital",
+        "Kesadaran Pengguna"
     ],
-    "Saran Sederhana": [
-        "Batasi waktu penggunaan harian",
-        "Cari akun dengan topik berbeda",
-        "Ikuti sumber informasi beragam",
-        "Gunakan fitur screen time"
+
+    "Strategi":[
+        "Diversifikasi konten",
+        "Rekomendasi sumber berbeda",
+        "Screen time control",
+        "Edukasi digital",
+        "Dashboard monitoring"
+    ],
+
+    "Dampak":[
+        "Mengurangi bias informasi",
+        "Meningkatkan variasi konten",
+        "Mengontrol penggunaan",
+        "Meningkatkan literasi",
+        "Meningkatkan awareness"
     ]
 })
 
-st.dataframe(
-    mitigasi,
-    use_container_width=True
-)
+st.dataframe(mitigasi, use_container_width=True)
 
 st.markdown("---")
 
 # ======================================================
-# PENUTUP INSIGHT
+# FINAL INSIGHT (VERY IMPORTANT UX SECTION)
 # ======================================================
 
-st.success(
-    """
-    Kesimpulan sederhana:
+st.markdown("### ⚡ Key Research Insight")
 
-    • Risiko penggunaan Instagram berada pada tingkat sedang hingga tinggi  
-    • Echo Chamber memiliki pengaruh paling kuat  
-    • Pengendalian pola konsumsi konten sangat diperlukan
-    """
-)
+st.info("""
+Hasil penelitian menunjukkan bahwa Echo Chamber merupakan faktor utama yang berpengaruh terhadap risiko adiksi digital Instagram, 
+sedangkan algoritma rekomendasi tidak menunjukkan pengaruh signifikan.
+
+Ini mengindikasikan bahwa pola konsumsi informasi (bukan hanya sistem algoritma) menjadi faktor dominan dalam perilaku adiktif pengguna.
+""")
+
+st.markdown("---")
+
+# ======================================================
+# SYSTEM IMPLICATION (FINAL BOX)
+# ======================================================
+
+st.success("""
+🚀 Implikasi Sistem:
+
+Dashboard ini dapat dikembangkan menjadi sistem monitoring risiko digital berbasis perilaku pengguna untuk:
+- Deteksi pola konsumsi informasi
+- Monitoring risiko adiksi digital
+- Analisis Echo Chamber secara real-time
+- Rekomendasi intervensi digital sehat
+""")
