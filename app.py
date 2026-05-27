@@ -285,85 +285,86 @@ st.caption(
 # KPI CARDS
 # ======================================================
 
+mean_risk = df["Skor Risiko"].mean()
+dominant_category = df["Kategori Risiko"].value_counts().idxmax()
+
+echo_mean = df["Skor Echo Chamber"].mean()
+algo_mean = df["Skor Algoritma"].mean()
+
 c1, c2, c3, c4 = st.columns(4)
 
-with c1:
+# ======================================================
+# CARD 1 - TOTAL RESPONDEN
+# ======================================================
 
+with c1:
     st.markdown(f"""
     <div class="metric-card">
-
-    <div class="metric-title">
-    Total Responden
-    </div>
-
-    <div class="metric-value">
-    {len(df)}
-    </div>
-
-    <div class="small-text">
-    Data setelah filtering
-    </div>
-
+        <div class="metric-title">Total Responden</div>
+        <div class="metric-value">{len(df)}</div>
+        <div class="small-text">Setelah filtering dataset</div>
     </div>
     """, unsafe_allow_html=True)
+
+# ======================================================
+# CARD 2 - RATA-RATA RISIKO (INTELLIGENT LABEL)
+# ======================================================
+
+if mean_risk < 2.61:
+    risk_label = "Rendah"
+elif mean_risk < 3.41:
+    risk_label = "Sedang"
+elif mean_risk < 4.21:
+    risk_label = "Tinggi"
+else:
+    risk_label = "Sangat Tinggi"
 
 with c2:
-
     st.markdown(f"""
     <div class="metric-card">
-
-    <div class="metric-title">
-    Skor Algoritma
-    </div>
-
-    <div class="metric-value">
-    {df['Skor Algoritma'].mean():.2f}
-    </div>
-
-    <div class="small-text">
-    Algoritma Rekomendasi Konten
-    </div>
-
+        <div class="metric-title">Rata-rata Risiko</div>
+        <div class="metric-value">{mean_risk:.2f}</div>
+        <div class="small-text">Skala 1–5 | {risk_label}</div>
     </div>
     """, unsafe_allow_html=True)
+
+# ======================================================
+# CARD 3 - KATEGORI DOMINAN (FIXED LOGIC)
+# ======================================================
 
 with c3:
-
     st.markdown(f"""
     <div class="metric-card">
-
-    <div class="metric-title">
-    Skor Echo Chamber
-    </div>
-
-    <div class="metric-value">
-    {df['Skor Echo Chamber'].mean():.2f}
-    </div>
-
-    <div class="small-text">
-    Intensitas Paparan Informasi Sejenis
-    </div>
-
+        <div class="metric-title">Kategori Dominan</div>
+        <div class="metric-value">{dominant_category}</div>
+        <div class="small-text">Distribusi terbesar pada data</div>
     </div>
     """, unsafe_allow_html=True)
 
-with c4:
+# ======================================================
+# CARD 4 - VARIABEL DOMINAN (INSIGHT, BUKAN SEKADAR ANGKA)
+# ======================================================
 
+# logic: variabel paling tinggi rata-rata
+impact_var = max(
+    {
+        "Algoritma": algo_mean,
+        "Echo Chamber": echo_mean
+    },
+    key=lambda x: {
+        "Algoritma": algo_mean,
+        "Echo Chamber": echo_mean
+    }[x]
+)
+
+impact_value = max(algo_mean, echo_mean)
+
+with c4:
     st.markdown(f"""
     <div class="metric-card">
-
-    <div class="metric-title">
-    Skor Risiko
-    </div>
-
-    <div class="metric-value">
-    {df['Skor Risiko'].mean():.2f}
-    </div>
-
-    <div class="small-text">
-    Risiko Adiksi Digital
-    </div>
-
+        <div class="metric-title">Faktor Dominan</div>
+        <div class="metric-value">{impact_var}</div>
+        <div class="small-text">{impact_value:.2f} | Variabel paling menonjol</div>
     </div>
     """, unsafe_allow_html=True)
 
