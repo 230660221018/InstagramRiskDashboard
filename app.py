@@ -246,25 +246,25 @@ with col1:
 
 with col2:
 
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=mean_risk,
-        range=[0,5],
-        title={"text":"Risk Level"},
-        gauge={
-            "axis":{"range":[0,5]},
-            "bar":{"color":"#4f46e5"},
-            "steps":[
-                {"range":[0,2.6],"color":"#dcfce7"},
-                {"range":[2.6,3.4],"color":"#fef9c3"},
-                {"range":[3.4,5],"color":"#fee2e2"}
-            ]
-        }
-    ))
+fig = go.Figure()
 
-    fig.update_layout(height=220, margin=dict(l=10,r=10,t=30,b=10))
+fig.add_trace(go.Indicator(
+    mode="gauge+number",
+    value=float(mean_risk),
+    title={"text": "Risk Level"},
+    gauge={
+        "axis": {"range": [0, 5]},
+        "bar": {"color": "#4f46e5"},
+        "steps": [
+            {"range": [0, 2.6], "color": "#dcfce7"},
+            {"range": [2.6, 3.4], "color": "#fef9c3"},
+            {"range": [3.4, 5], "color": "#fee2e2"}
+        ]
+    }
+))
 
-    st.plotly_chart(fig, use_container_width=True)
+fig.update_layout(height=220, margin=dict(l=10, r=10, t=30, b=10))
+st.plotly_chart(fig, use_container_width=True)
 
 # ======================================================
 # QUICK INSIGHT (VISUAL-FIRST, MIN TEXT)
