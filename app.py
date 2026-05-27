@@ -246,24 +246,34 @@ with col1:
 
 with col2:
 
-fig = go.Figure()
+mean_risk = df["Skor Risiko"].mean()
 
-fig.add_trace(go.Indicator(
+fig = go.Figure(go.Indicator(
     mode="gauge+number",
-    value=float(mean_risk),
-    title={"text": "Risk Level"},
+    value=mean_risk,
+    title={"text": "Skor Risiko Adiksi Digital"},
     gauge={
-        "axis": {"range": [0, 5]},
-        "bar": {"color": "#4f46e5"},
+        "axis": {
+            "range": [1, 5],
+            "tickwidth": 1,
+            "tickcolor": "darkblue"
+        },
+        "bar": {"color": "#2563eb"},
         "steps": [
-            {"range": [0, 2.6], "color": "#dcfce7"},
-            {"range": [2.6, 3.4], "color": "#fef9c3"},
-            {"range": [3.4, 5], "color": "#fee2e2"}
-        ]
+            {"range": [1, 1.8], "color": "#dcfce7"},
+            {"range": [1.81, 2.6], "color": "#bbf7d0"},
+            {"range": [2.61, 3.4], "color": "#fef9c3"},
+            {"range": [3.41, 4.2], "color": "#fed7aa"},
+            {"range": [4.21, 5], "color": "#fecaca"},
+        ],
     }
 ))
 
-fig.update_layout(height=220, margin=dict(l=10, r=10, t=30, b=10))
+fig.update_layout(
+    height=350,
+    margin=dict(l=20, r=20, t=50, b=20)
+)
+
 st.plotly_chart(fig, use_container_width=True)
 
 # ======================================================
