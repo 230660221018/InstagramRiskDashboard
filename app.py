@@ -241,7 +241,7 @@ st.caption("Dashboard berbasis Design Science Research (DSR)")
 # ======================================================
 # TAB 1 - PROFIL RESPONDEN (UX CLEAN VERSION)
 # ======================================================
-with tabs[1]:
+with tabs[0]:
 
     st.subheader("👥 Profil Responden")
 
