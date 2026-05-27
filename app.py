@@ -285,104 +285,84 @@ st.caption(
 # KPI CARDS
 # ======================================================
 
-total_responden = len(df)
-
-avg_risk = df["Skor Risiko"].mean()
-
-kategori_dominan = df["Kategori Risiko"].value_counts().idxmax()
-
-# interpretasi rata-rata risiko (biar tidak ambigu)
-if avg_risk < 2.61:
-    risk_label = "Rendah"
-elif avg_risk < 3.41:
-    risk_label = "Sedang"
-elif avg_risk < 4.21:
-    risk_label = "Tinggi"
-else:
-    risk_label = "Sangat Tinggi"
-
-
-# =========================
-# UI KPI
-# =========================
-
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
+
     st.markdown(f"""
     <div class="metric-card">
 
-        <div class="metric-title">
-        Total Responden
-        </div>
+    <div class="metric-title">
+    Total Responden
+    </div>
 
-        <div class="metric-value">
-        {total_responden}
-        </div>
+    <div class="metric-value">
+    {len(df)}
+    </div>
 
-        <div class="small-text">
-        Setelah filtering dataset
-        </div>
+    <div class="small-text">
+    Data setelah filtering
+    </div>
 
     </div>
     """, unsafe_allow_html=True)
-
 
 with c2:
+
     st.markdown(f"""
     <div class="metric-card">
 
-        <div class="metric-title">
-        Rata-rata Risiko
-        </div>
+    <div class="metric-title">
+    Skor Algoritma
+    </div>
 
-        <div class="metric-value">
-        {avg_risk:.2f}
-        </div>
+    <div class="metric-value">
+    {df['Skor Algoritma'].mean():.2f}
+    </div>
 
-        <div class="small-text">
-        Skala 1–5 | {risk_label}
-        </div>
+    <div class="small-text">
+    Algoritma Rekomendasi Konten
+    </div>
 
     </div>
     """, unsafe_allow_html=True)
-
 
 with c3:
+
     st.markdown(f"""
     <div class="metric-card">
 
-        <div class="metric-title">
-        Kategori Dominan
-        </div>
+    <div class="metric-title">
+    Skor Echo Chamber
+    </div>
 
-        <div class="metric-value">
-        {kategori_dominan}
-        </div>
+    <div class="metric-value">
+    {df['Skor Echo Chamber'].mean():.2f}
+    </div>
 
-        <div class="small-text">
-        Distribusi terbesar pada data
-        </div>
+    <div class="small-text">
+    Intensitas Paparan Informasi Sejenis
+    </div>
 
     </div>
     """, unsafe_allow_html=True)
 
-
 with c4:
+
     st.markdown(f"""
     <div class="metric-card">
 
-        <div class="metric-title">
-        Echo Chamber Impact
-        </div>
+    <div class="metric-title">
+    Skor Risiko
+    </div>
 
-        <div class="metric-value">
-        {df['Skor Echo Chamber'].mean():.2f}
-        </div>
+    <div class="metric-value">
+    {df['Skor Risiko'].mean():.2f}
+    </div>
 
-        <div class="small-text">
-        Variabel paling berpengaruh
-        </div>
+    <div class="small-text">
+    Risiko Adiksi Digital
+    </div>
 
     </div>
     """, unsafe_allow_html=True)
